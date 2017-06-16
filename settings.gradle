@@ -1,1 +1,1 @@
-include ':app', ':iocprocessor'
+include ':app', ':ioc-processor', ':ioc-annotation', ':ioc-api'

@@ -20,9 +20,11 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.tools.Diagnostic;
 
 
@@ -51,7 +53,9 @@ public class IocProcessor extends AbstractProcessor {
     public Set<String> getSupportedAnnotationTypes() {
         //return Collections.singleton(IocBindView.class.getCanonicalName());
         //return super.getSupportedAnnotationTypes();
-        Set<String> set = Collections.emptySet();
+        //Collections.emptySet() 返回的set不允许修改
+        //Set<String> set = Collections.emptySet();
+        Set<String> set = new LinkedHashSet<>();
         set.add(IocBindView.class.getCanonicalName());
         set.add(IocBindClick.class.getCanonicalName());
         return set;
@@ -98,30 +102,62 @@ public class IocProcessor extends AbstractProcessor {
         Set<? extends Element> iocBindViewElements = roundEnvironment.getElementsAnnotatedWith(IocBindView.class);
         Set<? extends Element> iocBindClickElements = roundEnvironment.getElementsAnnotatedWith(IocBindClick.class);
         for (Element  element:  iocBindViewElements) {
-            //System.out.println("process -- element.getSimpleName()="+element.getSimpleName());
+            if(checkAnnotationValid(element,IocBindView.class)){
+                error(element,"invalid element");
+                continue;
+            }
             messager.printMessage(Diagnostic.Kind.NOTE,"process -- element.getSimpleName()="+element.getSimpleName());
-//            MethodSpec main = MethodSpec.methodBuilder("main")
-//                    .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-//                    .returns(void.class)
-//                    .addParameter(String[].class, "args")
-//                    .addStatement("$T.out.println($S)", System.class, "Hello, JavaPoet!")
-//                    .build();
-//
-//            TypeSpec classType = TypeSpec.classBuilder("HelloWorld")
-//                    .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-//                    .addMethod(main)
-//                    .build();
-//
-//            JavaFile javaFile = JavaFile.builder("com.songwenju.aptproject", classType)
-//                    .build();
-//
-//            try {
-//                javaFile.writeTo(processingEnv.getFiler());
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
+            VariableElement variableElement = ((VariableElement) element);
+            TypeElement typeElement = (TypeElement) variableElement.getEnclosingElement();
+
+            // 全路径名
+            String qualifiedName = typeElement.getQualifiedName().toString();
+            messager.printMessage(Diagnostic.Kind.NOTE,"process -- element.getQualifiedName()="+qualifiedName);
+            MethodSpec main = MethodSpec.methodBuilder("main")
+                    .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                    .returns(void.class)
+                    .addParameter(String[].class, "args")
+                    .addStatement("$T.out.println($S)", System.class, "Hello, JavaPoet!")
+                    .build();
+
+            TypeSpec classType = TypeSpec.classBuilder("HelloWorld")
+                    .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                    .addMethod(main)
+                    .build();
+
+            JavaFile javaFile = JavaFile.builder("com.songwenju.aptproject", classType)
+                    .build();
+
+            try {
+                javaFile.writeTo(processingEnv.getFiler());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         return false;
+    }
+
+    /**
+     * 检查查找的元素是否合法
+     */
+    private boolean checkAnnotationValid(Element annotatedElement, Class clazz) {
+        if (annotatedElement.getKind() != ElementKind.FIELD) {
+            error(annotatedElement, "%s must be declared on field.", clazz.getSimpleName());
+            return false;
+        }
+        if (ClassValidator.isPrivate(annotatedElement)) {
+            error(annotatedElement, "%s() must can not be private.", annotatedElement.getSimpleName());
+            return false;
+        }
+        return true;
+    }
+
+    // 展示错误信息
+    private void error(Element element, String message, Object... args) {
+        if (args.length > 0) {
+            message = String.format(message, args);
+        }
+        messager.printMessage(Diagnostic.Kind.NOTE, message, element);
     }
 }

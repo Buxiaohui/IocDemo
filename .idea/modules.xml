@@ -4,6 +4,9 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/IocDemo.iml" filepath="$PROJECT_DIR$/IocDemo.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ioc-annotation/ioc-annotation.iml" filepath="$PROJECT_DIR$/ioc-annotation/ioc-annotation.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ioc-api/ioc-api.iml" filepath="$PROJECT_DIR$/ioc-api/ioc-api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ioc-processor/ioc-processor.iml" filepath="$PROJECT_DIR$/ioc-processor/ioc-processor.iml" />
       <module fileurl="file://$PROJECT_DIR$/iocprocessor/iocprocessor.iml" filepath="$PROJECT_DIR$/iocprocessor/iocprocessor.iml" />
     </modules>
   </component>
